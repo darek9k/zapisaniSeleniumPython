@@ -21,7 +21,7 @@ driver = webdriver.Chrome(options=chrome_options)
 
 
 # Test
-def test_happy_patch():
+def test_happy_path():
     driver.get('http://testy-zadanie.zapisani.dev')
     accept_cookie = AcceptCookie(driver)
     accept_cookie.accept_cookies()
@@ -43,5 +43,5 @@ def test_happy_patch():
     assert initial_count - final_count == 1
 
 
-test_happy_patch()
+test_happy_path()
 driver.quit()
