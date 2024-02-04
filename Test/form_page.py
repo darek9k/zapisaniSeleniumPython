@@ -1,9 +1,10 @@
 import logging
 import random
+
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import NoSuchElementException
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -75,6 +76,7 @@ class FormPage:
         self.driver.find_element(By.CSS_SELECTOR, self.END_BUTTON).click()
 
     def fill_form_with_test_data(self):
+        logger.info('Filling form with data')
         self.fill_email('test@example.com')
         self.fill_phone_number('123456789')
         self.fill_first_name('John')
@@ -96,3 +98,48 @@ class FormPage:
         expected_text = "Rejestracja niemożliwa. Wybrany produkt nie jest dostępny."
         element = self.driver.find_element(By.XPATH, self.FAIL_TEXT)
         assert expected_text in element.text, f"Oczekiwany tekst '{expected_text}' nie został znaleziony w elemencie."
+
+    def check_cash_method(self):
+        logger.info('Checking cash method is available')
+        WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, 'label[for="btn-cash"]'))
+        )
+        payment_method_element = self.driver.find_element(By.CSS_SELECTOR, 'label[for="btn-cash"]')
+        self.driver.execute_script("arguments[0].scrollIntoView();", payment_method_element)
+        self.driver.execute_script("arguments[0].click();", payment_method_element)
+
+    def check_final_count(self):
+        logger.info('Checking final count')
+        self.driver.get('http://testy-zadanie.zapisani.dev')
+        WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, '(//*[@id="alignment-decorator"]/div/div/div/div[5]/div)[3]'))
+        )
+        final_count_element = self.driver.find_element(By.XPATH,
+                                                       '(//*[@id="alignment-decorator"]/div/div/div/div[5]/div)[3]')
+        final_count_text = final_count_element.text
+        final_count = int(final_count_text.split(':')[1].strip())
+        return final_count
+
+    def check_initial_count(self):
+        logger.info('Checking initial count')
+        initial_count_element = self.driver.find_element(By.XPATH, '(//div/div[@class="col"])[3]')
+        initial_count_text = initial_count_element.text
+        initial_count = int(initial_count_text.split(':')[1].strip())
+        return initial_count
+
+    def checking_success(self):
+        logger.info('Checking success')
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(EC.url_to_be("https://testy-zadanie.zapisani.dev/zakonczono/gotowka"))
+        current_url = self.driver.current_url
+        expected_url = "https://testy-zadanie.zapisani.dev/zakonczono/gotowka"
+        assert expected_url == current_url
+        WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, '.col-md-12'))
+        )
+        # Checking if the success message and end button are displayed
+        success_message_element = self.driver.find_element(By.XPATH,
+                                                           '//div[contains(text(), "Rejestracja przyjęta. '
+                                                           'Dziękujemy!")]')
+        success_message_text = success_message_element.text
+        assert success_message_text == "Rejestracja przyjęta. Dziękujemy!"
