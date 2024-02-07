@@ -1,6 +1,7 @@
 import logging.handlers
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
 from form_page import FormPage, AcceptCookie
 
 # Configure logging
@@ -10,12 +11,12 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)-15s %(message)s')
 logger = logging.getLogger(__name__)
 
 # Set chrome options
-chrome_options = Options()
+options = webdriver.ChromeOptions()
 # headless its Selenium drama!
 # chrome_options.add_argument("--headless")  # Run Chrome in headless mode
 
 # Instantiate the webdriver
-driver = webdriver.Chrome(options=chrome_options)
+driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
 
 
 # Test
